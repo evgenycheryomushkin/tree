@@ -1,0 +1,9 @@
+<canvas #canvas 
+(mousemove)="mouseMove($event)"
+(mousedown)="mouseDown($event)"
+(touchstart)="touchStart($event)"
+(touchmove)="touchMove($event)"
+(touchend)="touchEnd($event)"
+>
+</canvas>
+<button mat-button (click)="click($event)">{{this.pauseButtonText}}</button>
