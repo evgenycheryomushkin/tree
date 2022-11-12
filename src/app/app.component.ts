@@ -1,4 +1,5 @@
 import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
+import { MatButton } from '@angular/material/button';
 
 export class TreeVertex {
   T: number;
@@ -54,6 +55,9 @@ export class AppComponent {
   private play: boolean = true;
   private interval: any;
   pauseButtonText: string = "pause";
+  shareButtonText: string = "share";
+  newButtonText: string = "new";
+
 
   @ViewChild('canvas', { static: true })
   canvas: ElementRef<HTMLCanvasElement> = {} as ElementRef;  
@@ -78,9 +82,16 @@ export class AppComponent {
     this.startTimer();
   }
 
-  click(event: any) {
+  pauseClick(event: any) {
     this.playPause();
   }
+
+  newClick(event: any) {
+    this.ctx.clearRect(0, 0, 
+      this.canvas.nativeElement.width, this.canvas.nativeElement.height);
+    this.vertices = new Array<TreeVertex>();
+  }
+
 
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event:KeyboardEvent) {
@@ -154,10 +165,6 @@ export class AppComponent {
   growIndex = 0;
   grow() {
     this.growIndex ++;
-    // todo repair filtering with idea of connections
-    //if (this.growIndex % 20 == 0) 
-      //this.filterTree();
-
     // add new vertex as branch
     if (this.vertices.length == 0) {
       let x = this.ctx.canvas.width / 2;

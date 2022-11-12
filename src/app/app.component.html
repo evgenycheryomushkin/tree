@@ -6,4 +6,5 @@
 (touchend)="touchEnd($event)"
 >
 </canvas>
-<button mat-button (click)="click($event)">{{this.pauseButtonText}}</button>
+<button mat-button (click)="pauseClick($event)">{{this.pauseButtonText}}</button>
+<button mat-button onclick="this.blur()" (click)="newClick($event)">{{this.newButtonText}}</button>
