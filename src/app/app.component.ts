@@ -1,7 +1,10 @@
 import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 
+var nextId: number = 1;
+
 export class TreeVertex {
+  id: number;
   T: number;
   x: number;
   y: number;
@@ -10,6 +13,7 @@ export class TreeVertex {
   leafMult = 1;
 
   constructor(x: number, y: number, T: number, prev: TreeVertex | undefined) {
+    this.id = nextId++;
     this.x = x;
     this.y = y;
     this.T = T;
@@ -63,8 +67,9 @@ export class AppComponent {
   canvas: ElementRef<HTMLCanvasElement> = {} as ElementRef;  
 
   private ctx!: CanvasRenderingContext2D;
-
   private vertices = new Array<TreeVertex>();
+  private iteration:number = 1;
+
 
   resize() {
     this.canvas.nativeElement.width = window.innerWidth - 10;
@@ -82,6 +87,28 @@ export class AppComponent {
     this.startTimer();
   }
 
+  touched: boolean = false;
+  clientX: number = 0; 
+  clientY: number = 0; 
+  touchEvent(event: TouchEvent) {
+    if (event.changedTouches.length > 0) {
+      this.clientX = event.changedTouches[0].clientX
+      this.clientY = event.changedTouches[0].clientY
+    }
+  }
+
+  touchStart(event: TouchEvent) {
+    this.touched = true;
+    this.touchEvent(event);
+  }
+  touchMove(event: TouchEvent) {
+    this.touchEvent(event);
+  }
+  touchEnd(event: TouchEvent) {
+    this.touched = true;
+    this.touchEvent(event);
+  }
+
   pauseClick(event: any) {
     this.playPause();
   }
@@ -92,7 +119,6 @@ export class AppComponent {
     this.vertices = new Array<TreeVertex>();
   }
 
-
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event:KeyboardEvent) {
     console.log(event);
@@ -100,6 +126,7 @@ export class AppComponent {
       this.playPause();
     }
   }
+
   playPause() {
     if (this.play) {
       this.pauseButtonText = "start";
@@ -117,11 +144,15 @@ export class AppComponent {
 
   startTimer() {
     console.log("start");
+    const app = this;
     this.play = true;
     this.interval = setInterval(() => {
-      this.time+=this.dt;
-      this.grow();
-      this.draw();
+      app.iteration ++;
+      app.time+=app.dt;
+      app.grow();
+      app.draw();
+      if (app.iteration % 100 == 0)
+        app.removeUnnecessary();
     }, this.dt*1000)
   }
 
@@ -130,7 +161,6 @@ export class AppComponent {
     this.play = false;
     clearInterval(this.interval);
   }
-
 
   private mouseX: number = 0;
   private mouseY: number = 0;
@@ -181,7 +211,7 @@ export class AppComponent {
         }
       }
       if (minV != undefined) {
-        let [x,y] = this.calculateNewVertixPos(minV, 90);
+        let [x,y] = this.calculateNewVertexPos(minV, 90);
         this.vertices.push(new TreeVertex(x, y, this.T0, minV));
         
         while(minV != undefined) {
@@ -192,29 +222,7 @@ export class AppComponent {
     }
   }
 
-  filterTree() {
-    const r = new Array<number>();
-    let given = null;
-    for(let i = this.vertices.length-1; i > 0; i--) {
-      if (given == null) given = this.vertices[i];
-      else {
-        let d = given.distance2(this.vertices[i]);
-
-        if (Math.sqrt(d) > given.T/2.0) {
-          given = this.vertices[i];
-          r.push(i);
-        }
-      }
-    }
-    let newVertices = Array<TreeVertex>();
-    for(let i = 0; i < r.length; i++) {
-      newVertices.push(this.vertices[r[i]]);
-    }
-    console.log("filtered:", this.vertices.length - newVertices.length);
-    this.vertices = newVertices;
-  }
-  
-  calculateNewVertixPos(last: TreeVertex, angle: number): [number, number] {
+  calculateNewVertexPos(last: TreeVertex, angle: number): [number, number] {
     const near = new Array<TreeVertex>();
     for(let v of this.vertices) {
       if (v.distance2(last) < this.R) near.push(v);
@@ -253,7 +261,6 @@ export class AppComponent {
   }
 
   drawLeaf() {
-
     let minD: number | undefined;
     let minV: TreeVertex | undefined;
     for(let v of this.vertices) {        
@@ -290,26 +297,36 @@ export class AppComponent {
     }
   }
 
-
-  touched: boolean = false;
-  clientX: number = 0; 
-  clientY: number = 0; 
-  touchEvent(event: TouchEvent) {
-    if (event.changedTouches.length > 0) {
-      this.clientX = event.changedTouches[0].clientX
-      this.clientY = event.changedTouches[0].clientY
+  removeUnnecessary() {
+    const visited =   new Set<number>();
+    const remove = new Set<number>();
+    for(let v of this.vertices) {
+      if (!visited.has(v.id)) {
+        if (v.prev != undefined && !visited.has(v.id)) {
+          const p = v.prev;
+          if (p.prev != undefined && !visited.has(p.id)) {
+            const p2 = p.prev;
+            visited.add(v.id);
+            const d12 = Math.sqrt(v.distance2(p));
+            const d23 = Math.sqrt(p.distance2(p2));
+            const d13 = Math.sqrt(v.distance2(p2));
+            const R1 = Math.sqrt(v.T);
+            const R3 = Math.sqrt(p2.T);
+            if (1.5 * d13 > d12 + d23) {
+              if (d13 * 4 < R1 && d13 * 4 < R3) {
+                remove.add(p.id);
+                v.prev = p2;
+              }
+            }
+          }
+        }
+      }
     }
-  }
-
-  touchStart(event: TouchEvent) {
-    this.touched = true;
-    this.touchEvent(event);
-  }
-  touchMove(event: TouchEvent) {
-    this.touchEvent(event);
-  }
-  touchEnd(event: TouchEvent) {
-    this.touched = true;
-    this.touchEvent(event);
+    const newVertices = new Array<TreeVertex>();
+    for(let v of this.vertices) {
+      if (!remove.has(v.id)) newVertices.push(v);
+    }
+    this.vertices = newVertices;
+    console.log("Filtered:", remove.size);
   }
 }
