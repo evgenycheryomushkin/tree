@@ -1,5 +1,6 @@
 import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { MatButton } from '@angular/material/button';
+import { AppMouse } from './app.mouse';
 
 var nextId: number = 1;
 
@@ -37,7 +38,7 @@ export class TreeVertex {
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent extends AppMouse {
   private title = 'Tree';
   private time: number = 0;
 
@@ -48,20 +49,13 @@ export class AppComponent {
   private lT: number = 3;
   private T0: number = 1;
 
-  private R: number = 3;
-  private Rmouse: number = 50;
-  private Amouse: number = 0.2;
-  private Dmouse: number = 5;
-  private Tmouse: number = 10;
   private df: number = 0.01;
-  private branchChance: number = 0.01;
 
   private play: boolean = true;
   private interval: any;
   pauseButtonText: string = "pause";
   shareButtonText: string = "share";
   newButtonText: string = "new";
-
 
   @ViewChild('canvas', { static: true })
   canvas: ElementRef<HTMLCanvasElement> = {} as ElementRef;  
@@ -70,43 +64,30 @@ export class AppComponent {
   private vertices = new Array<TreeVertex>();
   private iteration:number = 1;
 
+  ngOnInit(): void {
+    const c = this.canvas.nativeElement.getContext('2d');
+    
+    if (null != c) 
+      this.ctx = c;
+    else 
+      throw new Error("cant find canvas");
+
+    this.resize();
+    this.startTimer();
+  }
+
+  getBoundingClientRect() {
+    return this.ctx.canvas.getBoundingClientRect();
+  }
 
   resize() {
     this.canvas.nativeElement.width = window.innerWidth - 10;
     this.canvas.nativeElement.height = window.innerHeight - 40;
   }
 
-  ngOnInit(): void {
-    const c = this.canvas.nativeElement.getContext('2d');
-    
-    if (null != c) this.ctx = c;
-    else throw new Error("cant find canvas");
-
-    this.resize();
-
-    this.startTimer();
-  }
-
-  touched: boolean = false;
-  clientX: number = 0; 
-  clientY: number = 0; 
-  touchEvent(event: TouchEvent) {
-    if (event.changedTouches.length > 0) {
-      this.clientX = event.changedTouches[0].clientX
-      this.clientY = event.changedTouches[0].clientY
-    }
-  }
-
-  touchStart(event: TouchEvent) {
-    this.touched = true;
-    this.touchEvent(event);
-  }
-  touchMove(event: TouchEvent) {
-    this.touchEvent(event);
-  }
-  touchEnd(event: TouchEvent) {
-    this.touched = true;
-    this.touchEvent(event);
+  mouseDown(event: any) {
+    if (this.vertices.length > 0 && !this.play)
+      this.drawLeaf();
   }
 
   pauseClick(event: any) {
@@ -160,36 +141,6 @@ export class AppComponent {
     console.log("stop");
     this.play = false;
     clearInterval(this.interval);
-  }
-
-  private mouseX: number = 0;
-  private mouseY: number = 0;
-
-  mouseMove(event: any) {
-    const rect = this.ctx.canvas.getBoundingClientRect();
-    this.mouseX = event.clientX - rect.left;
-    this.mouseY = event.clientY - rect.top;
-  }
-
-  mouseDown(event: any) {
-    if (this.vertices.length > 0 && !this.play)
-      this.drawLeaf();
-  }
-
-  getMouseX() {
-    if (this.touched) {
-      return this.clientX;
-    } else {
-      return this.mouseX;
-    }
-  }
-
-  getMouseY() {
-    if (this.touched) {
-      return this.clientY;
-    } else {
-      return this.mouseY;
-    }
   }
 
   growIndex = 0;
