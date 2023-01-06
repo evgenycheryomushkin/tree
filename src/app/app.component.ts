@@ -42,11 +42,13 @@ export class AppComponent extends AppMouse {
   private title = 'Tree';
   private time: number = 0;
 
+
   private dt: number = 0.1;
   private dy: number = 1;
 
   private dT: number = 0.5;
   private lT: number = 3;
+  // initial thickness of tree vertix
   private T0: number = 1;
 
   private df: number = 0.01;
@@ -146,12 +148,14 @@ export class AppComponent extends AppMouse {
   growIndex = 0;
   grow() {
     this.growIndex ++;
-    // add new vertex as branch
+    // if there are no vertices then
+    // add on verix as root
     if (this.vertices.length == 0) {
       let x = this.ctx.canvas.width / 2;
       let y = this.ctx.canvas.height;
       this.vertices.push(new TreeVertex(x, y, this.T0, undefined));
     } else {
+      // find nearest vertix
       let minD: number | undefined;
       let minV: TreeVertex | undefined;
       for(let v of this.vertices) {        
@@ -161,48 +165,68 @@ export class AppComponent extends AppMouse {
           minV = v;
         }
       }
-      if (minV != undefined) {
-        let [x,y] = this.calculateNewVertexPos(minV, 90);
-        this.vertices.push(new TreeVertex(x, y, this.T0, minV));
+
+      if (minV == undefined) throw Error("wrong work of vertices array");
+      this.vertices.push(this.calculateNewVertix(minV));
         
         while(minV != undefined) {
           minV.T += this.dT;
           minV = minV.prev;
         }    
-      }
+      
     }
   }
 
-  calculateNewVertexPos(last: TreeVertex, angle: number): [number, number] {
-    const near = new Array<TreeVertex>();
+  // calculate point on circle and add dd distance
+  // to make point a little farther away
+  calculateCirclePoint(closest: TreeVertex, dd:number = 0) {
+    const mouseX = this.getMouseX();
+    const mouseY = this.getMouseY();
+    const dx = mouseX - closest.x;
+    const dy = mouseY - closest.y;
+    const d = this.distance(closest.x, closest.y, this.getMouseX(), this.getMouseY());
+    const R = Math.sqrt(closest.T);
+    return [closest.x+dx/d*(R+dd), closest.y+dy/d*(R+dd)];
+  }
+
+  calculateNewVertix(closest: TreeVertex): TreeVertex {
+    let [xn,yn] = this.calculateCirclePoint(closest);
+
+    // distance between point on circle
+    // and mouse pointer
+    const d2 = this.distance(xn, yn, this.getMouseX(), this.getMouseY());
+
+    var f1: number = 0;
+
+    var forceX: number = 0;
+    var forceY: number = 0;
+
+    if (d2 < this.AttgrationDistance) {
+      // mouse is near enough to speed up growing a branch
+      // distance to add to point to grow
+      f1 = this.AttractionForce * (1 - d2 / this.AttgrationDistance);
+      forceX = (this.getMouseX() - xn) / d2 * f1;
+      forceY = (this.getMouseY() - yn) / d2 * f1;
+    }
+
+    var fi: number = 0;
+    if (d2 < this.DistractionMouseDistance) {
+      forceX += (xn - this.getMouseX()) / d2 * this.DistractionForce;
+      forceY += (yn - this.getMouseY()) / d2 * this.DistractionForce;
+    }
+
     for(let v of this.vertices) {
-      if (v.distance2(last) < this.R) near.push(v);
-    }
-    let radius = Math.sqrt(last.T);
-    let mult = 1;
-    if (Math.random() < 0.5) mult = -1;
-    // todo add mouse here
-    let x = last.x + mult * Math.cos(angle)*radius;
-    let y = last.y - Math.sin(angle)*radius;
-
-    const d = this.distance(x, y, this.getMouseX(), this.getMouseY());
-    if (d < this.Rmouse) {
-      const force = this.Amouse * (1 - d/this.Rmouse);
-      x += force * (this.getMouseX() - x);
-      y += force * (this.getMouseY() - y);
+      const d = v.distance(xn, yn);
+      if (d < this.DistractionVerticesDistance) {
+        forceX += (xn - v.x) / d * this.DistractionForce;
+        forceY += (yn - v.y) / d * this.DistractionForce;  
+      }
     }
 
-    if (d < this.Dmouse) {
-      const v = new TreeVertex(this.getMouseX(), this.getMouseY(), this.Tmouse, undefined);
-      near.push(v);
-    }
+    xn += forceX;
+    yn += forceY;
 
-    for(const v of near) {
-      x += this.df * (x - v.x) * Math.sqrt(v.T);
-      y += this.df * (y - v.y) * Math.sqrt(v.T);
-    }
-
-    return [x,y];
+    return new TreeVertex(xn, yn, this.T0, closest);
   }
 
   distance(x: number, y: number, mouseX: number, mouseY: number): number {
