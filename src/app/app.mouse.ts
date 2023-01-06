@@ -1,28 +1,7 @@
 import { AppTouch } from "./app.touch";
 
 export abstract class AppMouse extends AppTouch {
-    // distance were vertix is distracted from mouse
-    protected DistractionMouseDistance: number = 5;
-    
-    // distance from other vertices to distract
-    // new vertix from them
-    protected DistractionVerticesDistance: number = 5;
 
-    // distraction force
-    protected DistractionForce: number = 0.2;
-
-    // if distance between vertix and
-    // mouse is smaller then this distance
-    // then grow this branch faster
-    protected AttgrationDistance: number = 50;
-    
-    // force to attract vertix to mouse
-    protected AttractionForce: number = 0.2;
-
-    // maximum speed up of growing a branch.
-    // distance to add to next vertix
-    protected SpeedUpDistance: number = 2;
-  
     private mouseX: number = 0;
     private mouseY: number = 0;
 
@@ -51,5 +30,4 @@ export abstract class AppMouse extends AppTouch {
         return this.mouseY;
       }
     }
-  
 }
