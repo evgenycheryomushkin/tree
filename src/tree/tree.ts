@@ -42,7 +42,7 @@ export class Tree {
 
     // distance were vertix is distracted from mouse
     // todo grow will stop on this distance
-    protected DistractionMouseDistance: number = 5;
+    protected DistractionMouseDistance: number = 1;
 
     // distraction force
     protected DistractionForce: number = 0.2;
@@ -63,10 +63,10 @@ export class Tree {
 
     // delta thickness. Delte to grow.
     // thickness increase by this value
-    private dT: number = 0.1;
+    private dT: number = 0.05;
 
     // initial thickness of tree vertix
-    private T0: number = 0.2;
+    private T0: number = 0.1;
 
     private df: number = 0.01;
 
@@ -213,10 +213,5 @@ export class Tree {
         }
         this.vertices = newVertices;
         console.log("Filtered:", remove.size);
-    }
-
-    oneLeaf(x0:number, y0:number, xm:number, ym:number, size:number) {
-        const R = size;
-
     }
 }
