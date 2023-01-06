@@ -40,9 +40,7 @@ export class AppComponent extends AppMouse {
       throw new Error("cant find canvas");
 
     this.resize();
-    // this.startTimer();
-
-    (async () => await this.growLeaf(500, 500, 400, 400, 100))();
+    this.startTimer();
   }
 
 
@@ -129,7 +127,8 @@ export class AppComponent extends AppMouse {
       }
     }
     if (minV != undefined) {
-      this.oneLeaf(minV.x, minV.y, this.getMouseX(), this.getMouseY(), 10, 0.5);
+      const [x,y] = this.tree.calculateCirclePoint(minV, this.getMouseX(), this.getMouseY());
+      (async () => await this.growLeaf(x, y, this.getMouseX(), this.getMouseY(), 10))();
     }
   }
 
