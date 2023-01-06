@@ -3,6 +3,10 @@ import { MatButton } from '@angular/material/button';
 import { AppMouse } from './app.mouse';
 import { Tree, TreeVertex } from '../tree/tree';
 
+function sleep(ms: number) {
+  return new Promise( resolve => setTimeout(resolve, ms) );
+}
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -37,7 +41,18 @@ export class AppComponent extends AppMouse {
 
     this.resize();
     // this.startTimer();
-    this.oneLeaf(500, 500, 600, 400, 10);
+
+    (async () => await this.growLeaf(500, 500, 400, 400, 100))();
+  }
+
+
+  private growLeaf = async (x0:number, y0: number, xm: number, ym: number, size: number) => {
+    var alpha = 0;
+    while (alpha < 0.1) {
+      await sleep(100);
+      alpha += 0.01;
+      this.oneLeaf(x0, y0, xm, ym, size, alpha);
+    }
   }
 
   getBoundingClientRect() {
@@ -114,7 +129,7 @@ export class AppComponent extends AppMouse {
       }
     }
     if (minV != undefined) {
-      this.oneLeaf(minV.x, minV.y, this.getMouseX(), this.getMouseY(), 10);
+      this.oneLeaf(minV.x, minV.y, this.getMouseX(), this.getMouseY(), 10, 0.5);
     }
   }
 
@@ -128,7 +143,7 @@ export class AppComponent extends AppMouse {
   }
 
 
-  oneLeaf(x0: number, y0: number, xm: number, ym: number, size: number) {
+  oneLeaf(x0: number, y0: number, xm: number, ym: number, size: number, fade: number) {
     const R = size;
     const dx1 = (xm - x0);
     const dy1 = (ym - y0);
@@ -151,7 +166,7 @@ export class AppComponent extends AppMouse {
     this.ctx.beginPath();
     this.ctx.moveTo(x0, y0);
     this.ctx.lineTo(x0 + dx * 5 * R / 4, y0 + dy * 5 * R / 4);
-    this.ctx.strokeStyle = 'green';
+    this.ctx.strokeStyle = 'rgba(0, 100, 0, '+fade*2+')';
     this.ctx.stroke();
 
     const R1 = Math.sqrt((xB - xO1) * (xB - xO1) + (yB - yO1) * (yB - yO1));
@@ -161,19 +176,14 @@ export class AppComponent extends AppMouse {
 
     this.ctx.beginPath();
     this.ctx.arc(xB, yB, R1, startAngle1, endAngle1, true);
-    this.ctx.strokeStyle = 'green';
-    this.ctx.stroke();
-    this.ctx.fillStyle = 'rgba(0, 100, 0, 0.5)';
-    this.ctx.fill();
 
     const startAngle2 = Math.atan2(yO1 - yC, xO1 - xC);
     const endAngle2 = Math.atan2(yO2 - yC, xO2 - xC);
 
-    this.ctx.beginPath();
     this.ctx.arc(xC, yC, R1, startAngle2, endAngle2, false);
-    this.ctx.strokeStyle = 'green';
+    this.ctx.strokeStyle = 'rgba(0, 100, 0, '+fade*2+')';
     this.ctx.stroke();
-    this.ctx.fillStyle = 'rgba(0, 100, 0, 0.5)';
+    this.ctx.fillStyle = 'rgba(0, 100, 0, '+fade+')';
     this.ctx.fill();
 
     const xO3 = x0 + 2 / 4 * dx * R;
@@ -204,7 +214,7 @@ export class AppComponent extends AppMouse {
     this.ctx.moveTo(xO4, yO4);
     this.ctx.lineTo(xO4 + Math.cos(a_45) * R * this.LeafThicknessCoefficient / 100,
       yO4 + Math.sin(a_45) * R * this.LeafThicknessCoefficient / 100);
-    this.ctx.strokeStyle = 'green';
-    this.ctx.stroke();
+      this.ctx.strokeStyle = 'rgba(0, 100, 0, '+fade*2+')';
+      this.ctx.stroke();
   }
 }
