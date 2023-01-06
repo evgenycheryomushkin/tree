@@ -116,8 +116,8 @@ export class AppComponent extends AppMouse {
       minV.leaf = true;
       const v = minV;
       if (v.leaf && v.prev) {
-        const dx = v.leafMult * (v.y - v.prev.y);
-        const dy = v.leafMult * (v.x - v.prev.x);
+        const dx = (v.y - v.prev.y);
+        const dy = (v.x - v.prev.x);
         const n = Math.sqrt(dx*dx + dy*dy);
 
         const lx = v.x + Math.sqrt(v.T) * dx/n;

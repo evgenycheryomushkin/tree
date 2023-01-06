@@ -7,7 +7,7 @@ export class TreeVertex {
     y: number;
     prev: TreeVertex | undefined;
     leaf: boolean = false;
-    leafMult = 1;
+    last: boolean = true;
 
     constructor(x: number, y: number, T: number, prev: TreeVertex | undefined) {
         this.id = nextId++;
@@ -15,7 +15,7 @@ export class TreeVertex {
         this.y = y;
         this.T = T;
         this.prev = prev;
-        if (Math.random() < 0.5) this.leafMult = -1;
+        if (prev) prev.last = false;
     }
     distance2(last: TreeVertex): number {
         const dx = this.x - last.x;
@@ -54,11 +54,16 @@ export class Tree {
     // new vertix from them
     protected DistractionVerticesDistance: number = 5;
 
+    // weight to consider previous direction
+    // of grow of a tree. Previous direction is
+    // considered and mouse direction is considered
+    private PreviousDirectionWeight: number = 10;
+
     private dy: number = 1;
 
     // delta thickness. Delte to grow.
     // thickness increase by this value
-    private dT: number = 0.2;
+    private dT: number = 0.1;
 
     // initial thickness of tree vertix
     private T0: number = 0.2;
@@ -101,12 +106,19 @@ export class Tree {
             }
 
             if (minV == undefined) throw Error("wrong work of vertices array");
-            this.vertices.push(this.calculateNewVertix(minV, mouseX, mouseY));
-
-            while (minV != undefined) {
-                minV.T += this.dT;
-                minV = minV.prev;
+            const v = this.calculateNewVertix(minV, mouseX, mouseY);
+            if (v) {
+                this.vertices.push(v);
+                this.thick(minV);
             }
+        }
+    }
+
+    thick(minV: TreeVertex) {
+        var v: TreeVertex | undefined = minV;
+        while (v != undefined) {
+            v.T += this.dT;
+            v = v.prev;
         }
     }
 
@@ -116,16 +128,34 @@ export class Tree {
         const dx = mouseX - closest.x;
         const dy = mouseY - closest.y;
         const d = this.distance(closest.x, closest.y, mouseX, mouseY);
+
+        var dxnorm = dx/d;
+        var dynorm = dy/d;
+        
+        if (closest.last && closest.prev) {
+            const dx2 = closest.x - closest.prev.x
+            const dy2 = closest.y - closest.prev.y
+            const d2 = Math.sqrt(dx2*dx2+dy2*dy2);
+
+            const dx2norm = dx2 / d2;
+            const dy2norm = dy2 / d2;
+
+            dxnorm = (dx2norm * this.PreviousDirectionWeight + dxnorm) / (1 + this.PreviousDirectionWeight);
+            dynorm = (dy2norm * this.PreviousDirectionWeight + dynorm) / (1 + this.PreviousDirectionWeight);
+        }
+
         const R = Math.sqrt(closest.T);
-        return [closest.x + dx / d * (R + dd), closest.y + dy / d * (R + dd)];
+        return [closest.x + dxnorm * (R + dd), closest.y + dynorm * (R + dd)];
     }
 
-    calculateNewVertix(closest: TreeVertex, mouseX: number, mouseY: number): TreeVertex {
+    calculateNewVertix(closest: TreeVertex, mouseX: number, mouseY: number): TreeVertex | undefined {
         let [xn, yn] = this.calculateCirclePoint(closest, mouseX, mouseY);
 
         // distance between point on circle
         // and mouse pointer
         const d2 = this.distance(xn, yn, mouseX, mouseY);
+
+        if (d2 < this.DistractionMouseDistance) return undefined;
 
         var f1: number = 0;
 
@@ -142,23 +172,6 @@ export class Tree {
             // tree grow up when mouse is far away
             [xn, yn] = this.calculateCirclePoint(closest, closest.x + Math.random()*20.0-10.0, closest.y - 100);
         }
-
-        var fi: number = 0;
-        if (d2 < this.DistractionMouseDistance) {
-            forceX += (xn - mouseX) / d2 * this.DistractionForceMouse;
-            forceY += (yn - mouseY) / d2 * this.DistractionForceMouse;
-        }
-
-        for (let v of this.vertices) {
-            const d = v.distance(xn, yn);
-            if (d < this.DistractionVerticesDistance) {
-                forceX += (xn - v.x) / d * this.DistractionForce;
-                forceY += (yn - v.y) / d * this.DistractionForce;
-            }
-        }
-
-        xn += forceX;
-        yn += forceY;
 
         return new TreeVertex(xn, yn, this.T0, closest);
     }
