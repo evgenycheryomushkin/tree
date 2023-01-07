@@ -77,22 +77,20 @@ export class Tree {
         this.vertices = new Array<TreeVertex>();
     }
 
-    tick(canvasWidth: number, canvasHeight: number, mouseX: number, mouseY: number) {
+    tick(mouseX: number, mouseY: number) {
         this.iteration++;
-        this.grow(canvasWidth, canvasHeight, mouseX, mouseY);
+        this.grow(mouseX, mouseY);
         if (this.iteration % 100 == 0)
             this.removeUnnecessary();
     }
 
     growIndex = 0;
-    grow(canvasWidth: number, canvasHeight: number, mouseX: number, mouseY: number) {
+    grow(mouseX: number, mouseY: number) {
         this.growIndex++;
         // if there are no vertices then
         // add on verix as root
         if (this.vertices.length == 0) {
-            let x = canvasWidth / 2;
-            let y = canvasHeight;
-            this.vertices.push(new TreeVertex(x, y, this.T0, undefined));
+            this.vertices.push(new TreeVertex(0, 0, this.T0, undefined));
         } else {
             // find nearest vertix
             let minD: number | undefined;

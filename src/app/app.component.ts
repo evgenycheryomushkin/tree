@@ -50,7 +50,6 @@ export class AppComponent extends AppMouse {
     this.startTimer();
   }
 
-
   private growLeaf = async (x0: number, y0: number, xm: number, ym: number, size: number) => {
     var alpha = 0;
     while (alpha < 0.1) {
@@ -65,8 +64,10 @@ export class AppComponent extends AppMouse {
   }
 
   resize() {
+    console.log("resize");
     this.canvas.nativeElement.width = window.innerWidth - 40;
     this.canvas.nativeElement.height = window.innerHeight - 100;
+    this.redraw();
   }
 
   mouseDown(event: any) {
@@ -78,9 +79,12 @@ export class AppComponent extends AppMouse {
     this.playPause();
   }
 
-  newClick(event: any) {
+  clearRect() {
     this.ctx.clearRect(0, 0,
       this.canvas.nativeElement.width, this.canvas.nativeElement.height);
+  }
+
+  newClick(event: any) {
     this.tree.reset();
   }
 
@@ -107,12 +111,20 @@ export class AppComponent extends AppMouse {
     this.resize();
   }
 
+  getCW() {
+    return this.canvas.nativeElement.width;
+  }
+
+  getCH() {
+    return this.canvas.nativeElement.height;
+  }
+
   startTimer() {
     console.log("start");
     const app = this;
     this.play = true;
     this.interval = setInterval(() => {
-      app.tree.tick(this.ctx.canvas.width, this.ctx.canvas.height, this.getMouseX(), this.getMouseY());
+      app.tree.tick(this.getMouseX() - this.getCW()/2, this.getMouseY() - this.getCH());
       app.draw();
     }, this.dt * 1000)
   }
@@ -164,16 +176,20 @@ export class AppComponent extends AppMouse {
     }
   }
 
+  redraw() {
+    this.clearRect();
+    this.draw();
+  }
+
+
   draw() {
     for (let v of this.tree.vertices) {
       this.ctx.beginPath();
-      this.ctx.arc(v.x, v.y, Math.sqrt(v.T), 0, 2 * Math.PI, false)
+      this.ctx.arc(v.x + this.getCW()/2, v.y+this.getCH(), Math.sqrt(v.T), 0, 2 * Math.PI, false)
       this.ctx.fillStyle = 'brown';
       this.ctx.fill();
     }
   }
-
-
 
   oneLeaf(x0: number, y0: number, xm: number, ym: number, size: number, fade: number) {
     const R = size;
