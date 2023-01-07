@@ -2,6 +2,7 @@ import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { AppMouse } from './app.mouse';
 import { Tree, TreeVertex } from '../tree/tree';
 import { AboutComponent } from './about/about.component';
+import { Leaf } from 'src/leaf/leaf';
 
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -17,6 +18,7 @@ export class AppComponent extends AppMouse {
   private dt: number = 0.1;
 
   private tree: Tree = new Tree();
+  private leaves: Array<Leaf> = new Array<Leaf>();
 
   private play: boolean = true;
   private interval: any;
@@ -119,12 +121,20 @@ export class AppComponent extends AppMouse {
     return this.canvas.nativeElement.height;
   }
 
+  override getMouseX(): number {
+    return super.getMouseX() - this.getCW()/2;
+  }
+
+  protected override getMouseY(): number {
+    return super.getMouseY() - this.getCH();
+  }
+
   startTimer() {
     console.log("start");
     const app = this;
     this.play = true;
     this.interval = setInterval(() => {
-      app.tree.tick(this.getMouseX() - this.getCW()/2, this.getMouseY() - this.getCH());
+      app.tree.tick(this.getMouseX(), this.getMouseY());
       app.draw();
     }, this.dt * 1000)
   }
@@ -164,15 +174,21 @@ export class AppComponent extends AppMouse {
     let minD: number | undefined;
     let minV: TreeVertex | undefined;
     for (let v of this.tree.vertices) {
-      const d = v.distance(this.getMouseX(), this.getMouseY());
+      const mouseX = this.getMouseX();
+      const mouseY = this.getMouseY();
+      const d = v.distance(mouseX, mouseY);
       if (minD == undefined || minD > d) {
         minD = d;
         minV = v;
       }
     }
     if (minV != undefined) {
-      const [x, y] = this.tree.calculateCirclePoint(minV, this.getMouseX(), this.getMouseY());
-      (async () => await this.growLeaf(x, y, this.getMouseX(), this.getMouseY(), 10))();
+      const mouseX = this.getMouseX();
+      const mouseY = this.getMouseY();
+      const leaf: Leaf = new Leaf(minV, mouseX, mouseY);
+      this.leaves.push(leaf);
+      const [x, y] = this.tree.calculateCirclePoint(minV, mouseX, mouseY);
+      (async () => await this.growLeaf(x, y, mouseX, mouseY, 10))();
     }
   }
 
@@ -180,7 +196,6 @@ export class AppComponent extends AppMouse {
     this.clearRect();
     this.draw();
   }
-
 
   draw() {
     for (let v of this.tree.vertices) {
@@ -191,7 +206,13 @@ export class AppComponent extends AppMouse {
     }
   }
 
-  oneLeaf(x0: number, y0: number, xm: number, ym: number, size: number, fade: number) {
+  oneLeaf(x0_: number, y0_: number, xm_: number, ym_:number, size: number, fade: number) {
+    const x0 = x0_ + this.getCW()/2;
+    const y0 = y0_ + this.getCH();
+    const xm = xm_ + this.getCW()/2;
+    const ym = ym_ + this.getCH();
+
+
     const R = size;
     const dx1 = (xm - x0);
     const dy1 = (ym - y0);

@@ -171,6 +171,9 @@ export class Tree {
             [xn, yn] = this.calculateCirclePoint(closest, closest.x + Math.random()*20.0-10.0, closest.y - 100);
         }
 
+        // tree wants to grow up
+        forceY -= this.dy;
+
         return new TreeVertex(xn, yn, this.T0, closest);
     }
 
