@@ -58,8 +58,8 @@ export class AppComponent extends AppMouse {
   }
 
   resize() {
-    this.canvas.nativeElement.width = window.innerWidth - 10;
-    this.canvas.nativeElement.height = window.innerHeight - 40;
+    this.canvas.nativeElement.width = window.innerWidth - 40;
+    this.canvas.nativeElement.height = window.innerHeight - 100;
   }
 
   mouseDown(event: any) {
