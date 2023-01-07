@@ -1,10 +1,10 @@
 import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
-import { MatButton } from '@angular/material/button';
 import { AppMouse } from './app.mouse';
 import { Tree, TreeVertex } from '../tree/tree';
+import { AboutComponent } from './about/about.component';
 
 function sleep(ms: number) {
-  return new Promise( resolve => setTimeout(resolve, ms) );
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 @Component({
@@ -23,11 +23,18 @@ export class AppComponent extends AppMouse {
   pauseButtonText: string = "pause";
   shareButtonText: string = "share";
   newButtonText: string = "new";
+  downloadButtonText: string = "download";
+  aboutButtonText: string = "about";
+  aboutClicked: boolean = false;
 
   private LeafThicknessCoefficient: number = 10;
 
   @ViewChild('canvas', { static: true })
   canvas: ElementRef<HTMLCanvasElement> = {} as ElementRef;
+
+  @ViewChild('about', { static: true })
+  about: AboutComponent;
+
 
   private ctx!: CanvasRenderingContext2D;
 
@@ -44,7 +51,7 @@ export class AppComponent extends AppMouse {
   }
 
 
-  private growLeaf = async (x0:number, y0: number, xm: number, ym: number, size: number) => {
+  private growLeaf = async (x0: number, y0: number, xm: number, ym: number, size: number) => {
     var alpha = 0;
     while (alpha < 0.1) {
       await sleep(100);
@@ -116,18 +123,43 @@ export class AppComponent extends AppMouse {
     clearInterval(this.interval);
   }
 
+  downloadClick(event: any) {
+    var canvasDataUrl = this.canvas.nativeElement.toDataURL()
+      .replace(/^data:image\/[^;]*/, 'data:application/octet-stream');
+    var link = document.createElement('a'); // create an anchor tag
+
+    // set parameters for downloading
+    link.setAttribute('href', canvasDataUrl);
+    link.setAttribute('target', '_blank');
+    link.setAttribute('download', "tree.png");
+
+    // compat mode for dispatching click on your anchor
+    if (document.createEvent) {
+      var evtObj = document.createEvent('MouseEvents');
+      evtObj.initEvent('click', true, true);
+      link.dispatchEvent(evtObj);
+    } else if (link.click) {
+      link.click();
+    }
+    this.resize();
+  }
+
+  aboutClick(event: any) {
+    this.aboutClicked = !this.aboutClicked;
+  }
+
   drawLeaf() {
     let minD: number | undefined;
     let minV: TreeVertex | undefined;
     for (let v of this.tree.vertices) {
-      const d = v.distance(this.getMouseX(), this.getMouseY()) + v.T;
+      const d = v.distance(this.getMouseX(), this.getMouseY());
       if (minD == undefined || minD > d) {
         minD = d;
         minV = v;
       }
     }
     if (minV != undefined) {
-      const [x,y] = this.tree.calculateCirclePoint(minV, this.getMouseX(), this.getMouseY());
+      const [x, y] = this.tree.calculateCirclePoint(minV, this.getMouseX(), this.getMouseY());
       (async () => await this.growLeaf(x, y, this.getMouseX(), this.getMouseY(), 10))();
     }
   }
@@ -140,6 +172,7 @@ export class AppComponent extends AppMouse {
       this.ctx.fill();
     }
   }
+
 
 
   oneLeaf(x0: number, y0: number, xm: number, ym: number, size: number, fade: number) {
@@ -165,7 +198,7 @@ export class AppComponent extends AppMouse {
     this.ctx.beginPath();
     this.ctx.moveTo(x0, y0);
     this.ctx.lineTo(x0 + dx * 5 * R / 4, y0 + dy * 5 * R / 4);
-    this.ctx.strokeStyle = 'rgba(0, 100, 0, '+fade*2+')';
+    this.ctx.strokeStyle = 'rgba(0, 100, 0, ' + fade * 2 + ')';
     this.ctx.stroke();
 
     const R1 = Math.sqrt((xB - xO1) * (xB - xO1) + (yB - yO1) * (yB - yO1));
@@ -180,9 +213,9 @@ export class AppComponent extends AppMouse {
     const endAngle2 = Math.atan2(yO2 - yC, xO2 - xC);
 
     this.ctx.arc(xC, yC, R1, startAngle2, endAngle2, false);
-    this.ctx.strokeStyle = 'rgba(0, 100, 0, '+fade*2+')';
+    this.ctx.strokeStyle = 'rgba(0, 100, 0, ' + fade * 2 + ')';
     this.ctx.stroke();
-    this.ctx.fillStyle = 'rgba(0, 100, 0, '+fade+')';
+    this.ctx.fillStyle = 'rgba(0, 100, 0, ' + fade + ')';
     this.ctx.fill();
 
     const xO3 = x0 + 2 / 4 * dx * R;
@@ -213,7 +246,7 @@ export class AppComponent extends AppMouse {
     this.ctx.moveTo(xO4, yO4);
     this.ctx.lineTo(xO4 + Math.cos(a_45) * R * this.LeafThicknessCoefficient / 100,
       yO4 + Math.sin(a_45) * R * this.LeafThicknessCoefficient / 100);
-      this.ctx.strokeStyle = 'rgba(0, 100, 0, '+fade*2+')';
-      this.ctx.stroke();
+    this.ctx.strokeStyle = 'rgba(0, 100, 0, ' + fade * 2 + ')';
+    this.ctx.stroke();
   }
 }

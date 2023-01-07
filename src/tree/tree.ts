@@ -35,7 +35,7 @@ export class Tree {
     // if distance between vertix and
     // mouse is smaller then this distance
     // then grow this branch faster
-    protected AttgrationDistance: number = 50;
+    protected AttgrationDistance: number = 100;
     
     // force to attract vertix to mouse
     protected AttractionForce: number = 0.2;

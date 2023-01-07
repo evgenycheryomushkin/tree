@@ -1,3 +1,6 @@
+<div
+[hidden]="aboutClicked"
+>
 <canvas #canvas 
 (mousemove)="mouseMove($event)"
 (mousedown)="mouseDown($event)"
@@ -6,5 +9,13 @@
 (touchend)="touchEnd($event)"
 >
 </canvas>
+</div>
+<app-about #about
+[hidden]="!aboutClicked"
+>
+
+</app-about>
 <button mat-button (click)="pauseClick($event)">{{this.pauseButtonText}}</button>
 <button mat-button onclick="this.blur()" (click)="newClick($event)">{{this.newButtonText}}</button>
+<button mat-button onclick="this.blur()" (click)="downloadClick($event)">{{this.downloadButtonText}}</button>
+<button mat-button onclick="this.blur()" (click)="aboutClick($event)">{{this.aboutButtonText}}</button>
