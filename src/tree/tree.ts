@@ -59,7 +59,13 @@ export class Tree {
     // considered and mouse direction is considered
     private PreviousDirectionWeight: number = 10;
 
-    private dy: number = 1;
+    // increase on Y coordinate on each iteration
+    // tree gorw towards the light
+    private DY: number = 1;
+
+    // moving the tree left to right
+    // like that it foolws the sun
+    private DX: number = 0.5;
 
     // delta thickness. Delte to grow.
     // thickness increase by this value
@@ -71,21 +77,21 @@ export class Tree {
     private df: number = 0.01;
 
     vertices = new Array<TreeVertex>();
-    private iteration: number = 1;
+    iteration: number = 1;
 
     reset() {
         this.vertices = new Array<TreeVertex>();
     }
 
-    tick(mouseX: number, mouseY: number) {
+    tick(time: number, mouseX: number, mouseY: number) {
         this.iteration++;
-        this.grow(mouseX, mouseY);
+        this.grow(time, mouseX, mouseY);
         if (this.iteration % 100 == 0)
             this.removeUnnecessary();
     }
 
     growIndex = 0;
-    grow(mouseX: number, mouseY: number) {
+    grow(time: number, mouseX: number, mouseY: number) {
         this.growIndex++;
         // if there are no vertices then
         // add on verix as root
@@ -104,7 +110,7 @@ export class Tree {
             }
 
             if (minV == undefined) throw Error("wrong work of vertices array");
-            const v = this.calculateNewVertix(minV, mouseX, mouseY);
+            const v = this.calculateNewVertix(time, minV, mouseX, mouseY);
             if (v) {
                 this.vertices.push(v);
                 this.thick(minV);
@@ -146,7 +152,7 @@ export class Tree {
         return [closest.x + dxnorm * (R + dd), closest.y + dynorm * (R + dd)];
     }
 
-    calculateNewVertix(closest: TreeVertex, mouseX: number, mouseY: number): TreeVertex | undefined {
+    calculateNewVertix(time: number, closest: TreeVertex, mouseX: number, mouseY: number): TreeVertex | undefined {
         let [xn, yn] = this.calculateCirclePoint(closest, mouseX, mouseY);
 
         // distance between point on circle
@@ -172,7 +178,13 @@ export class Tree {
         }
 
         // tree wants to grow up
-        forceY -= this.dy;
+        forceY -= this.DY;
+        var t = time;
+        while (t>1) t--;
+        if (t < 0.5) 
+            forceX += this.DX - t*4*this.DX;
+        else
+            forceX += -this.DX + t*4*this.DX;
 
         return new TreeVertex(xn, yn, this.T0, closest);
     }

@@ -15,7 +15,8 @@ function sleep(ms: number) {
 })
 export class AppComponent extends AppMouse {
   private title = 'Tree';
-  private dt: number = 0.1;
+  private time: number = 0;
+  private dt: number = 0.025;
 
   private tree: Tree = new Tree();
   private leaves: Array<Leaf> = new Array<Leaf>();
@@ -30,13 +31,13 @@ export class AppComponent extends AppMouse {
   aboutClicked: boolean = false;
 
   private LeafThicknessCoefficient: number = 10;
+  private LeafSize: number = 10;
 
   @ViewChild('canvas', { static: true })
   canvas: ElementRef<HTMLCanvasElement> = {} as ElementRef;
 
   @ViewChild('about', { static: true })
   about: AboutComponent;
-
 
   private ctx!: CanvasRenderingContext2D;
 
@@ -49,7 +50,8 @@ export class AppComponent extends AppMouse {
       throw new Error("cant find canvas");
 
     this.resize();
-    this.startTimer();
+    // this.startTimer();
+    this.drawFlower(300, 300, 50);
   }
 
   private growLeaf = async (x0: number, y0: number, xm: number, ym: number, size: number) => {
@@ -122,7 +124,7 @@ export class AppComponent extends AppMouse {
   }
 
   override getMouseX(): number {
-    return super.getMouseX() - this.getCW()/2;
+    return super.getMouseX() - this.getCW() / 2;
   }
 
   protected override getMouseY(): number {
@@ -134,8 +136,14 @@ export class AppComponent extends AppMouse {
     const app = this;
     this.play = true;
     this.interval = setInterval(() => {
-      app.tree.tick(this.getMouseX(), this.getMouseY());
+      app.tree.tick(this.time, this.getMouseX(), this.getMouseY());
       app.draw();
+      if (this.tree.iteration % 1000 == 0) {
+        console.log("redraw leaves");
+        this.clearRect();
+        this.drawLeaves();
+      }
+      this.time += this.dt;
     }, this.dt * 1000)
   }
 
@@ -188,28 +196,36 @@ export class AppComponent extends AppMouse {
       const leaf: Leaf = new Leaf(minV, mouseX, mouseY);
       this.leaves.push(leaf);
       const [x, y] = this.tree.calculateCirclePoint(minV, mouseX, mouseY);
-      (async () => await this.growLeaf(x, y, mouseX, mouseY, 10))();
+      (async () => await this.growLeaf(x, y, mouseX, mouseY, this.LeafSize))();
     }
   }
 
   redraw() {
     this.clearRect();
     this.draw();
+    this.drawLeaves();
   }
 
   draw() {
     for (let v of this.tree.vertices) {
       this.ctx.beginPath();
-      this.ctx.arc(v.x + this.getCW()/2, v.y+this.getCH(), Math.sqrt(v.T), 0, 2 * Math.PI, false)
+      this.ctx.arc(v.x + this.getCW() / 2, v.y + this.getCH(), Math.sqrt(v.T), 0, 2 * Math.PI, false)
       this.ctx.fillStyle = 'brown';
       this.ctx.fill();
     }
   }
 
-  oneLeaf(x0_: number, y0_: number, xm_: number, ym_:number, size: number, fade: number) {
-    const x0 = x0_ + this.getCW()/2;
+  drawLeaves() {
+    for (let l of this.leaves) {
+      const [x, y] = this.tree.calculateCirclePoint(l.vertix, l.xm, l.ym);
+      this.oneLeaf(x, y, l.xm, l.ym, this.LeafSize, 0.5)
+    }
+  }
+
+  oneLeaf(x0_: number, y0_: number, xm_: number, ym_: number, size: number, fade: number) {
+    const x0 = x0_ + this.getCW() / 2;
     const y0 = y0_ + this.getCH();
-    const xm = xm_ + this.getCW()/2;
+    const xm = xm_ + this.getCW() / 2;
     const ym = ym_ + this.getCH();
 
 
@@ -285,5 +301,33 @@ export class AppComponent extends AppMouse {
       yO4 + Math.sin(a_45) * R * this.LeafThicknessCoefficient / 100);
     this.ctx.strokeStyle = 'rgba(0, 100, 0, ' + fade * 2 + ')';
     this.ctx.stroke();
+  }
+
+  private drawFlower = async (x0: number, y0: number, R: number) => {
+    const c = Math.cos(Math.PI * 2 / 7);
+    const D = (16 * c * c - 32 * c + 16) * R + 32 * R * R - 32 * R * R * c;
+    const r = (4 * (1 - c) * R + Math.sqrt(D)) / (4 + 8 * c);
+    for (var t = 0; t < 50; t++) {
+      // await sleep(100 / 50);
+      this.ctx.beginPath();
+      this.ctx.arc(x0, y0, R, 0, Math.PI * 2);
+      this.ctx.strokeStyle = "rgba(250, 0, 0, 0.01)";
+      this.ctx.stroke();
+      this.ctx.fillStyle = "rgba(250, 0, 0, 0.008)";
+      this.ctx.fill();
+    }
+    for (var i = 0; i < 7; i++) {
+      for (var t = 0; t < 20; t++) {
+        await sleep(5);
+        this.ctx.beginPath();
+        const x = Math.cos(i * 2 * Math.PI / 7) * (R + r);
+        const y = Math.sin(i * 2 * Math.PI / 7) * (R + r);
+        this.ctx.arc(x + x0, y + y0, r, 0, Math.PI * 2);
+        this.ctx.strokeStyle = "rgba(250, 0, 0, 0.02)";
+        this.ctx.stroke();
+        this.ctx.fillStyle = "rgba(250, 0, 0, 0.01)";
+        this.ctx.fill();
+      }
+    }
   }
 }
