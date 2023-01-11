@@ -3,6 +3,7 @@ import { AppMouse } from './app.mouse';
 import { Tree, TreeVertex } from '../tree/tree';
 import { AboutComponent } from './about/about.component';
 import { Leaf } from 'src/leaf/leaf';
+import { AudioService } from './audio.service';
 
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -41,6 +42,11 @@ export class AppComponent extends AppMouse {
 
   private ctx!: CanvasRenderingContext2D;
 
+  constructor (private audioService: AudioService) {
+    super();
+    audioService.init();
+  }
+
   ngOnInit(): void {
     const c = this.canvas.nativeElement.getContext('2d');
 
@@ -50,8 +56,8 @@ export class AppComponent extends AppMouse {
       throw new Error("cant find canvas");
 
     this.resize();
-    // this.startTimer();
-    this.drawFlower(300, 300, 50);
+    this.startTimer();
+    // this.drawFlower(300, 300, 50);
   }
 
   private growLeaf = async (x0: number, y0: number, xm: number, ym: number, size: number) => {
@@ -75,6 +81,7 @@ export class AppComponent extends AppMouse {
   }
 
   mouseDown(event: any) {
+    this.audioService.playAudio();
     if (this.tree.vertices.length > 0 && !this.play)
       this.drawLeaf();
   }

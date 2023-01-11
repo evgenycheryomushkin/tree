@@ -65,7 +65,7 @@ export class Tree {
 
     // moving the tree left to right
     // like that it foolws the sun
-    private DX: number = 0.5;
+    private DX: number = 5;
 
     // delta thickness. Delte to grow.
     // thickness increase by this value
