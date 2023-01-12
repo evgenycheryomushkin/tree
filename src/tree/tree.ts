@@ -69,7 +69,7 @@ export class Tree {
 
     // delta thickness. Delte to grow.
     // thickness increase by this value
-    private dT: number = 0.05;
+    dT: number = 0.05;
 
     // initial thickness of tree vertix
     private T0: number = 0.1;

@@ -1,7 +1,6 @@
 import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { AppMouse } from './app.mouse';
 import { Tree, TreeVertex } from '../tree/tree';
-import { AboutComponent } from './about/about.component';
 import { Leaf } from 'src/leaf/leaf';
 import { AudioService } from './audio.service';
 
@@ -29,6 +28,9 @@ export class AppComponent extends AppMouse {
   newButtonText: string = "new";
   downloadButtonText: string = "download";
   aboutButtonText: string = "about";
+  doneButtonText: string = "done";
+
+
   aboutClicked: boolean = false;
 
   private LeafThicknessCoefficient: number = 10;
@@ -36,9 +38,6 @@ export class AppComponent extends AppMouse {
 
   @ViewChild('canvas', { static: true })
   canvas: ElementRef<HTMLCanvasElement> = {} as ElementRef;
-
-  @ViewChild('about', { static: true })
-  about: AboutComponent;
 
   private ctx!: CanvasRenderingContext2D;
 
@@ -84,10 +83,6 @@ export class AppComponent extends AppMouse {
     this.audioService.playAudio();
     if (this.tree.vertices.length > 0 && !this.play)
       this.drawLeaf();
-  }
-
-  pauseClick(event: any) {
-    this.playPause();
   }
 
   clearRect() {
@@ -182,7 +177,32 @@ export class AppComponent extends AppMouse {
   }
 
   aboutClick(event: any) {
+    if (this.play) this.playPause();
     this.aboutClicked = !this.aboutClicked;
+  }
+
+  pauseClick(event: any) {
+    this.playPause();
+  }
+
+  doneClick(event: any) {
+    this.aboutClicked = !this.aboutClicked;
+    this.redraw();
+  }
+
+  treeThicknessChange(thickness0100: any) {
+    this.tree.dT = thickness0100/100 * 0.5;
+    console.log("thickness:", this.tree.dT);
+  }
+
+  leafThicknessChange(leafThickness0100: any) {
+    this.LeafThicknessCoefficient = Math.exp(leafThickness0100/100*4-2);
+    console.log("leaf thickness:", this.LeafThicknessCoefficient);
+  }
+
+  leafSizeChange(leafSize0100: any) {
+    this.LeafSize = leafSize0100;
+    console.log("leaf size:", this.LeafSize);
   }
 
   drawLeaf() {

@@ -1,8 +1,33 @@
-<app-about #about
+<div #about
 [hidden]="!aboutClicked"
-></app-about>
-<br>
+>
+    <h2>Grow Tree project. </h2>
+    <br>
+    <a href="https://github.com/evgenycheryomushkin/growtree/issues">Issue tracker</a>
+    <br>
+    <h3>Credits:</h3>
+    Sound is taken from <a href="https://freesound.org/people/Amoek/sounds/393348/">freesound</a>
+    Recorded by <a href="https://freesound.org/people/Amoek/">Amoek</a>.
+    Licensed by <a href="https://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0 Unported</a>.
+    <h3>Settings:</h3>
+    Tree thickness:
+    <mat-slider
+        (valueChange)="treeThicknessChange($event)"
+    ></mat-slider>
+    Leaf thickness:
+    <mat-slider
+        (valueChange)="leafThicknessChange($event)"
+    ></mat-slider>
+    Leaf size:
+    <mat-slider
+        (valueChange)="leafSizeChange($event)"
+    ></mat-slider>
+    
+    <br>
+    <button mat-button (click)="doneClick($event)">{{this.doneButtonText}}</button>
+</div>
 <div
+[hidden]="aboutClicked"
 >
 <canvas #canvas 
 (mousemove)="mouseMove($event)"
@@ -12,9 +37,9 @@
 (touchend)="touchEnd($event)"
 >
 </canvas>
-</div>
 
 <button mat-button (click)="pauseClick($event)">{{this.pauseButtonText}}</button>
 <button mat-button onclick="this.blur()" (click)="newClick($event)">{{this.newButtonText}}</button>
 <button mat-button onclick="this.blur()" (click)="downloadClick($event)">{{this.downloadButtonText}}</button>
 <button mat-button onclick="this.blur()" (click)="aboutClick($event)">{{this.aboutButtonText}}</button>
+</div>
