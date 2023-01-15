@@ -1,4 +1,13 @@
-canvas { display:block; } /* To remove the scrollbars */
-div {
-    
+div.wrapper {
+    position: absolute;
+}
+
+div.about {
+    background-color: #eaeaea;
+}
+
+div.canvas {
+    position: fixed;
+    top: 0;
+    right: 0;
 }

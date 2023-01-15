@@ -36,7 +36,7 @@ export class Tree {
     // mouse is smaller then this distance
     // then grow this branch faster
     protected AttgrationDistance: number = 100;
-    
+
     // force to attract vertix to mouse
     protected AttractionForce: number = 0.2;
 
@@ -57,7 +57,11 @@ export class Tree {
     // weight to consider previous direction
     // of grow of a tree. Previous direction is
     // considered and mouse direction is considered
-    private PreviousDirectionWeight: number = 10;
+    PreviousDirectionWeight: number = 40;
+
+    // priority that is given to end node
+    // against other node to grow leaf
+    EndNodePriority: number = 2;
 
     // increase on Y coordinate on each iteration
     // tree gorw towards the light
@@ -102,7 +106,10 @@ export class Tree {
             let minD: number | undefined;
             let minV: TreeVertex | undefined;
             for (let v of this.vertices) {
-                const d = v.distance(mouseX, mouseY) - Math.sqrt(v.T);
+                var p: number;
+                if (v.last) p = this.EndNodePriority;
+                else p = 1;
+                const d = (v.distance(mouseX, mouseY) - Math.sqrt(v.T)) / p;
                 if (minD == undefined || minD > d) {
                     minD = d;
                     minV = v;
@@ -133,13 +140,13 @@ export class Tree {
         const dy = mouseY - closest.y;
         const d = this.distance(closest.x, closest.y, mouseX, mouseY);
 
-        var dxnorm = dx/d;
-        var dynorm = dy/d;
-        
+        var dxnorm = dx / d;
+        var dynorm = dy / d;
+
         if (closest.last && closest.prev) {
             const dx2 = closest.x - closest.prev.x
             const dy2 = closest.y - closest.prev.y
-            const d2 = Math.sqrt(dx2*dx2+dy2*dy2);
+            const d2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
 
             const dx2norm = dx2 / d2;
             const dy2norm = dy2 / d2;
@@ -174,17 +181,17 @@ export class Tree {
             forceY = (mouseY - yn) / d2 * f1;
         } else {
             // tree grow up when mouse is far away
-            [xn, yn] = this.calculateCirclePoint(closest, closest.x + Math.random()*20.0-10.0, closest.y - 100);
+            [xn, yn] = this.calculateCirclePoint(closest, closest.x + Math.random() * 20.0 - 10.0, closest.y - 100);
         }
 
         // tree wants to grow up
         forceY -= this.DY;
         var t = time;
-        while (t>1) t--;
-        if (t < 0.5) 
-            forceX += this.DX - t*4*this.DX;
+        while (t > 1) t--;
+        if (t < 0.5)
+            forceX += this.DX - t * 4 * this.DX;
         else
-            forceX += -this.DX + t*4*this.DX;
+            forceX += -this.DX + t * 4 * this.DX;
 
         return new TreeVertex(xn, yn, this.T0, closest);
     }

@@ -22,6 +22,7 @@ export class AppComponent extends AppMouse {
   private leaves: Array<Leaf> = new Array<Leaf>();
 
   private play: boolean = true;
+  private playBeforeAbout: boolean;
   private interval: any;
   pauseButtonText: string = "pause";
   shareButtonText: string = "share";
@@ -41,7 +42,7 @@ export class AppComponent extends AppMouse {
 
   private ctx!: CanvasRenderingContext2D;
 
-  constructor (private audioService: AudioService) {
+  constructor(private audioService: AudioService) {
     super();
     audioService.init();
   }
@@ -73,10 +74,12 @@ export class AppComponent extends AppMouse {
   }
 
   resize() {
-    console.log("resize");
+
     this.canvas.nativeElement.width = window.innerWidth - 40;
     this.canvas.nativeElement.height = window.innerHeight - 100;
+    console.log("resize:", this.canvas.nativeElement.width, this.canvas.nativeElement.height);
     this.redraw();
+
   }
 
   mouseDown(event: any) {
@@ -176,33 +179,56 @@ export class AppComponent extends AppMouse {
     this.resize();
   }
 
-  aboutClick(event: any) {
-    if (this.play) this.playPause();
-    this.aboutClicked = !this.aboutClicked;
-  }
-
   pauseClick(event: any) {
     this.playPause();
   }
 
+  aboutClick(event: any) {
+    this.playBeforeAbout = this.play;
+    if (this.play) this.playPause();
+    this.aboutClicked = !this.aboutClicked;
+  }
+
   doneClick(event: any) {
+    if (this.playBeforeAbout) this.playPause();
     this.aboutClicked = !this.aboutClicked;
     this.redraw();
   }
 
   treeThicknessChange(thickness0100: any) {
-    this.tree.dT = thickness0100/100 * 0.5;
+    this.tree.dT = thickness0100 / 100 * 0.5;
     console.log("thickness:", this.tree.dT);
   }
 
+  getTreeThickness() {
+    return this.tree.dT * 100 / 0.5;
+  }
+
   leafThicknessChange(leafThickness0100: any) {
-    this.LeafThicknessCoefficient = Math.exp(leafThickness0100/100*4-2);
+    this.LeafThicknessCoefficient = Math.exp(leafThickness0100 / 100 * 4 - 2);
     console.log("leaf thickness:", this.LeafThicknessCoefficient);
+  }
+
+  getLeafThickness() {
+    return (Math.log(this.LeafThicknessCoefficient) + 2) / 4;
+  }
+
+  bendChange(bend0100: any) {
+    this.tree.PreviousDirectionWeight = bend0100 * 2.5;
+    console.log("bend:", this.tree.PreviousDirectionWeight);
+  }
+
+  getBend() {
+    return this.tree.PreviousDirectionWeight / 2.5;
   }
 
   leafSizeChange(leafSize0100: any) {
     this.LeafSize = leafSize0100;
     console.log("leaf size:", this.LeafSize);
+  }
+
+  getLeafSize() {
+    return this.LeafSize;
   }
 
   drawLeaf() {
