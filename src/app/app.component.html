@@ -19,16 +19,13 @@
         <table>
             <tr>
                 <td>
-        Tree thickness:
+                    Tree thickness:
                 </td>
                 <td>
                     Leaf thickness:
                 </td>
                 <td>
                     Leaf size:
-                </td>
-                <td>
-                    Bend:
                 </td>
                 </tr>
                 <tr>
@@ -41,6 +38,13 @@
                     <td>
                         <mat-slider (valueChange)="leafSizeChange($event)" [value]="getLeafSize()"></mat-slider>
                     </td>
+                </tr>
+                <tr>
+                    <td>
+                        Bend:
+                    </td>    
+                </tr>
+                <tr>
                     <td>
                         <mat-slider (valueChange)="bendChange($event)" [value]="getBend()"> </mat-slider>
                     </td>
