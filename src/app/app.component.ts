@@ -210,7 +210,7 @@ export class AppComponent extends AppMouse {
   }
 
   getLeafThickness() {
-    return (Math.log(this.LeafThicknessCoefficient) + 2) / 4;
+    return (Math.log(this.LeafThicknessCoefficient) + 2) / 4 * 100;
   }
 
   bendChange(bend0100: any) {
