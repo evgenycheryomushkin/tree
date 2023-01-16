@@ -121,6 +121,9 @@ export class Tree {
             if (v) {
                 this.vertices.push(v);
                 this.thick(minV);
+            } else {
+                // todo
+                    // this.drawFlower(300, 300, 50);
             }
         }
     }

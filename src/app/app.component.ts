@@ -57,7 +57,6 @@ export class AppComponent extends AppMouse {
 
     this.resize();
     this.startTimer();
-    // this.drawFlower(300, 300, 50);
   }
 
   private growLeaf = async (x0: number, y0: number, xm: number, ym: number, size: number) => {
