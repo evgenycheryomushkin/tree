@@ -73,12 +73,10 @@ export class AppComponent extends AppMouse {
   }
 
   resize() {
-
     this.canvas.nativeElement.width = window.innerWidth - 40;
     this.canvas.nativeElement.height = window.innerHeight - 100;
     console.log("resize:", this.canvas.nativeElement.width, this.canvas.nativeElement.height);
     this.redraw();
-
   }
 
   mouseDown(event: any) {
@@ -93,7 +91,9 @@ export class AppComponent extends AppMouse {
   }
 
   newClick(event: any) {
+    this.leaves = new Array<Leaf>();
     this.tree.reset();
+    this.redraw();
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -182,15 +182,26 @@ export class AppComponent extends AppMouse {
     this.playPause();
   }
 
+
+  prevWidth: number;
+  prevHeight: number;
+
   aboutClick(event: any) {
+    this.prevWidth = this.canvas.nativeElement.width;
+    this.prevHeight = this.canvas.nativeElement.height;
     this.playBeforeAbout = this.play;
     if (this.play) this.playPause();
     this.aboutClicked = !this.aboutClicked;
   }
 
   doneClick(event: any) {
+    this.canvas.nativeElement.width = this.prevWidth;
+    this.canvas.nativeElement.height = this.prevHeight;
     if (this.playBeforeAbout) this.playPause();
     this.aboutClicked = !this.aboutClicked;
+    window.scroll({ 
+      top: 0, 
+      left: 0});
     this.redraw();
   }
 
