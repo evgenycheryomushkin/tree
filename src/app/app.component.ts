@@ -28,7 +28,7 @@ export class AppComponent extends AppMouse {
   shareButtonText: string = "share";
   newButtonText: string = "new";
   downloadButtonText: string = "download";
-  aboutButtonText: string = "about";
+  aboutButtonText: string = "settings";
   doneButtonText: string = "done";
 
 
