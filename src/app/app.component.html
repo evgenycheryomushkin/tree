@@ -44,10 +44,19 @@
                     <td>
                         Bend:
                     </td>    
+                    <td>
+                        Sound:
+                    </td>
                 </tr>
                 <tr>
                     <td>
                         <mat-slider (valueChange)="bendChange($event)" [value]="getBend()"> </mat-slider>
+                    </td>
+                    <td>
+                        <mat-slide-toggle
+                        [checked]="getSoundOn()"
+                        (change)="playSoundToggle($event)">
+                    </mat-slide-toggle>
                     </td>
                 </tr>
         </table>

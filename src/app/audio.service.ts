@@ -13,12 +13,18 @@ export class AudioService {
 
   isPlaying: boolean = false;
 
+  audio = new Audio();
+
   playAudio(): void {
     if (this.isPlaying) return;
-    const audio = new Audio();
-    audio.src = '../../assets/audio/393348__amoek__birds-forest-woodpecker.wav';
-    audio.load();
-    audio.play();
+    this.audio.src = '../../assets/audio/393348__amoek__birds-forest-woodpecker.wav';
+    this.audio.load();
+    this.audio.play();
     this.isPlaying = true;
+  }
+  
+  stopAudio() {
+    this.audio.pause();
+    this.isPlaying = false;
   }
 }

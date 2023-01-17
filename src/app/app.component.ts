@@ -3,6 +3,7 @@ import { AppMouse } from './app.mouse';
 import { Tree, TreeVertex } from '../tree/tree';
 import { Leaf } from 'src/leaf/leaf';
 import { AudioService } from './audio.service';
+import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -80,7 +81,6 @@ export class AppComponent extends AppMouse {
   }
 
   mouseDown(event: any) {
-    this.audioService.playAudio();
     if (this.tree.vertices.length > 0 && !this.play)
       this.drawLeaf();
   }
@@ -199,10 +199,20 @@ export class AppComponent extends AppMouse {
     this.canvas.nativeElement.height = this.prevHeight;
     if (this.playBeforeAbout) this.playPause();
     this.aboutClicked = !this.aboutClicked;
-    window.scroll({ 
-      top: 0, 
-      left: 0});
+    window.scroll({
+      top: 0,
+      left: 0
+    });
     this.redraw();
+  }
+
+  getSoundOn():boolean {
+    return this.audioService.isPlaying;
+  }
+
+  playSoundToggle(event: MatSlideToggleChange) {
+    if (event.checked) this.audioService.playAudio();
+    else this.audioService.stopAudio();
   }
 
   treeThicknessChange(thickness0100: any) {
