@@ -17,7 +17,11 @@ function sleep(ms: number) {
 export class AppComponent extends AppMouse {
   private title = 'Tree';
   private time: number = 0;
-  private dt: number = 0.025;
+  /**
+   * Delta time interval
+   * @private
+   */
+  private dt: number = 0.001;
 
   private tree: Tree = new Tree();
   private leaves: Array<Leaf> = new Array<Leaf>();
